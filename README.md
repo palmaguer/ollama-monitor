@@ -1,6 +1,6 @@
 # Ollama Monitor
 
-A lightweight, console-based monitoring tool for [Ollama](https://ollama.ai/) on Windows. Inspired by Linux `top`, it provides real-time visibility into your local LLM inference server.
+A lightweight, console-based monitoring tool for [Ollama](https://ollama.ai/) on Windows and Linux/WSL2. Inspired by Linux `top`, it provides real-time visibility into your local LLM inference server.
 
 ![Screenshot](screenshot.png)
 
@@ -13,11 +13,19 @@ A lightweight, console-based monitoring tool for [Ollama](https://ollama.ai/) on
 
 ## Requirements
 
+### Windows
 - Windows 10/11
 - NVIDIA GPU recommended (for full GPU monitoring); AMD/Intel GPUs supported with basic info via DXGI
 - [Ollama](https://ollama.ai/) installed and running
 - Visual Studio 2022 Build Tools or Visual Studio 2022 (for building)
 - CMake 3.20+
+
+### Linux/WSL2
+- Ubuntu 20.04+ or WSL2 with Ubuntu
+- NVIDIA GPU with drivers installed (verify with `nvidia-smi`)
+- [Ollama](https://ollama.ai/) installed and running on the same machine
+- CMake 3.20+
+- Build tools: `build-essential`, `libcurl4-openssl-dev`
 
 ## Building
 
@@ -36,6 +44,28 @@ cmake --build . --config Release
 ```
 
 The executable will be at `build/Release/ollama-monitor.exe`.
+
+### Building on Linux/WSL2
+
+```bash
+# Install dependencies (Ubuntu/Debian)
+sudo apt update
+sudo apt install build-essential cmake libcurl4-openssl-dev
+
+# Clone the repository
+git clone https://github.com/palmaguer/ollama-monitor.git
+cd ollama-monitor
+
+# Create build directory
+mkdir build
+cd build
+
+# Configure and build
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
+```
+
+The executable will be at `build/ollama-monitor`.
 
 ## Usage
 
@@ -137,7 +167,9 @@ Uses Ollama's REST API:
 - `/api/tags` - List available models
 - `/api/ps` - List running/loaded models
 
-HTTP requests use Windows native WinHTTP - no external dependencies like curl.
+HTTP requests use native platform APIs:
+- **Windows**: WinHTTP
+- **Linux/WSL2**: libcurl
 
 ## Project Structure
 

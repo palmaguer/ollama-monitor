@@ -8,6 +8,8 @@
 #include <windows.h>
 #include <winhttp.h>
 #pragma comment(lib, "winhttp.lib")
+#elif defined(__linux__)
+#include <curl/curl.h>
 #endif
 
 OllamaClient::OllamaClient(const std::string& base_url) 
@@ -150,6 +152,34 @@ std::string OllamaClient::makeRequest(const std::string& endpoint) {
     WinHttpCloseHandle(hConnect);
     WinHttpCloseHandle(hSession);
     
+    return result;
+#elif defined(__linux__)
+    std::string result;
+
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        return "";
+    }
+
+    std::string url = base_url_ + endpoint;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +[](char* ptr, size_t size, size_t nmemb, void* userdata) -> size_t {
+        std::string* str = static_cast<std::string*>(userdata);
+        str->append(ptr, size * nmemb);
+        return size * nmemb;
+    });
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+    CURLcode res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        return "";
+    }
+
     return result;
 #else
     return "";

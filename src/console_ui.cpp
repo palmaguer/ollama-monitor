@@ -78,12 +78,20 @@ std::string ConsoleUI::formatTimeUntil(const std::string& expires_at) const {
         tm.tm_sec = sec;
         
         // Convert to time_t (UTC)
+        #ifdef _WIN32
         time_t expires_time = _mkgmtime(&tm);
+        #else
+        time_t expires_time = timegm(&tm);
+        #endif
         time_t now = time(nullptr);
-        
+
         // Get current time in UTC
         std::tm* now_tm = gmtime(&now);
+        #ifdef _WIN32
         time_t now_utc = _mkgmtime(now_tm);
+        #else
+        time_t now_utc = timegm(now_tm);
+        #endif
         
         double diff_seconds = difftime(expires_time, now_utc);
         

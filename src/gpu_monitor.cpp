@@ -74,14 +74,86 @@ static bool loadNvmlFunctions() {
 
 #endif // _WIN32
 
+#ifdef __linux__
+#include <dlfcn.h>
+
+typedef int nvmlReturn_t;
+typedef struct nvmlDevice_st* nvmlDevice_t;
+typedef struct { unsigned long long total; unsigned long long free; unsigned long long used; } nvmlMemory_t;
+typedef struct { unsigned int gpu; unsigned int memory; } nvmlUtilization_t;
+typedef enum { NVML_TEMPERATURE_GPU = 0 } nvmlTemperatureSensors_t;
+
+#define NVML_SUCCESS 0
+#define NVML_DEVICE_NAME_BUFFER_SIZE 64
+
+typedef nvmlReturn_t (*nvmlInit_t)(void);
+typedef nvmlReturn_t (*nvmlShutdown_t)(void);
+typedef nvmlReturn_t (*nvmlDeviceGetCount_t)(unsigned int*);
+typedef nvmlReturn_t (*nvmlDeviceGetHandleByIndex_t)(unsigned int, nvmlDevice_t*);
+typedef nvmlReturn_t (*nvmlDeviceGetName_t)(nvmlDevice_t, char*, unsigned int);
+typedef nvmlReturn_t (*nvmlDeviceGetMemoryInfo_t)(nvmlDevice_t, nvmlMemory_t*);
+typedef nvmlReturn_t (*nvmlDeviceGetUtilizationRates_t)(nvmlDevice_t, nvmlUtilization_t*);
+typedef nvmlReturn_t (*nvmlDeviceGetTemperature_t)(nvmlDevice_t, nvmlTemperatureSensors_t, unsigned int*);
+typedef nvmlReturn_t (*nvmlDeviceGetPowerUsage_t)(nvmlDevice_t, unsigned int*);
+
+static void* g_nvmlLib = nullptr;
+static nvmlInit_t g_nvmlInit = nullptr;
+static nvmlShutdown_t g_nvmlShutdown = nullptr;
+static nvmlDeviceGetCount_t g_nvmlDeviceGetCount = nullptr;
+static nvmlDeviceGetHandleByIndex_t g_nvmlDeviceGetHandleByIndex = nullptr;
+static nvmlDeviceGetName_t g_nvmlDeviceGetName = nullptr;
+static nvmlDeviceGetMemoryInfo_t g_nvmlDeviceGetMemoryInfo = nullptr;
+static nvmlDeviceGetUtilizationRates_t g_nvmlDeviceGetUtilizationRates = nullptr;
+static nvmlDeviceGetTemperature_t g_nvmlDeviceGetTemperature = nullptr;
+static nvmlDeviceGetPowerUsage_t g_nvmlDeviceGetPowerUsage = nullptr;
+
+static bool loadNvmlFunctionsLinux() {
+    const char* paths[] = {
+        "libnvidia-ml.so.1",
+        "libnvidia-ml.so",
+        "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1",
+        "/usr/lib/libnvidia-ml.so.1"
+    };
+
+    for (const char* path : paths) {
+        g_nvmlLib = dlopen(path, RTLD_LAZY);
+        if (g_nvmlLib) break;
+    }
+
+    if (!g_nvmlLib) return false;
+
+    g_nvmlInit = (nvmlInit_t)dlsym(g_nvmlLib, "nvmlInit_v2");
+    if (!g_nvmlInit) g_nvmlInit = (nvmlInit_t)dlsym(g_nvmlLib, "nvmlInit");
+
+    g_nvmlShutdown = (nvmlShutdown_t)dlsym(g_nvmlLib, "nvmlShutdown");
+    g_nvmlDeviceGetCount = (nvmlDeviceGetCount_t)dlsym(g_nvmlLib, "nvmlDeviceGetCount_v2");
+    if (!g_nvmlDeviceGetCount) g_nvmlDeviceGetCount = (nvmlDeviceGetCount_t)dlsym(g_nvmlLib, "nvmlDeviceGetCount");
+    g_nvmlDeviceGetHandleByIndex = (nvmlDeviceGetHandleByIndex_t)dlsym(g_nvmlLib, "nvmlDeviceGetHandleByIndex");
+    g_nvmlDeviceGetName = (nvmlDeviceGetName_t)dlsym(g_nvmlLib, "nvmlDeviceGetName");
+    g_nvmlDeviceGetMemoryInfo = (nvmlDeviceGetMemoryInfo_t)dlsym(g_nvmlLib, "nvmlDeviceGetMemoryInfo");
+    g_nvmlDeviceGetUtilizationRates = (nvmlDeviceGetUtilizationRates_t)dlsym(g_nvmlLib, "nvmlDeviceGetUtilizationRates");
+    g_nvmlDeviceGetTemperature = (nvmlDeviceGetTemperature_t)dlsym(g_nvmlLib, "nvmlDeviceGetTemperature");
+    g_nvmlDeviceGetPowerUsage = (nvmlDeviceGetPowerUsage_t)dlsym(g_nvmlLib, "nvmlDeviceGetPowerUsage");
+
+    if (!g_nvmlInit || !g_nvmlShutdown || !g_nvmlDeviceGetHandleByIndex || !g_nvmlDeviceGetCount) {
+        dlclose(g_nvmlLib);
+        g_nvmlLib = nullptr;
+        return false;
+    }
+
+    return true;
+}
+
+#endif // __linux__
+
 GPUMonitor::GPUMonitor() : initialized_(false), gpu_count_(0) {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
     initialized_ = initializeNVML();
 #endif
 }
 
 GPUMonitor::~GPUMonitor() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
     cleanupNVML();
 #endif
 }
@@ -91,28 +163,43 @@ bool GPUMonitor::isAvailable() const {
 }
 
 bool GPUMonitor::initializeNVML() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
+    #ifdef _WIN32
     if (!loadNvmlFunctions()) {
         return false;
     }
-    
-    nvmlReturn_t result = g_nvmlInit();
-    if (result != NVML_SUCCESS) {
-        FreeLibrary(g_nvmlDll);
-        g_nvmlDll = nullptr;
+    #elif defined(__linux__)
+    if (!loadNvmlFunctionsLinux()) {
         return false;
     }
-    
-    // Get the number of GPUs
+    #endif
+
+    nvmlReturn_t result = g_nvmlInit();
+    if (result != NVML_SUCCESS) {
+        #ifdef _WIN32
+        FreeLibrary(g_nvmlDll);
+        g_nvmlDll = nullptr;
+        #elif defined(__linux__)
+        dlclose(g_nvmlLib);
+        g_nvmlLib = nullptr;
+        #endif
+        return false;
+    }
+
     unsigned int deviceCount = 0;
     result = g_nvmlDeviceGetCount(&deviceCount);
     if (result != NVML_SUCCESS || deviceCount == 0) {
         g_nvmlShutdown();
+        #ifdef _WIN32
         FreeLibrary(g_nvmlDll);
         g_nvmlDll = nullptr;
+        #elif defined(__linux__)
+        dlclose(g_nvmlLib);
+        g_nvmlLib = nullptr;
+        #endif
         return false;
     }
-    
+
     gpu_count_ = static_cast<int>(deviceCount);
     return true;
 #else
@@ -125,7 +212,8 @@ int GPUMonitor::getGPUCount() const {
 }
 
 void GPUMonitor::cleanupNVML() {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__linux__)
+    #ifdef _WIN32
     if (g_nvmlDll) {
         if (g_nvmlShutdown) {
             g_nvmlShutdown();
@@ -133,6 +221,15 @@ void GPUMonitor::cleanupNVML() {
         FreeLibrary(g_nvmlDll);
         g_nvmlDll = nullptr;
     }
+    #elif defined(__linux__)
+    if (g_nvmlLib) {
+        if (g_nvmlShutdown) {
+            g_nvmlShutdown();
+        }
+        dlclose(g_nvmlLib);
+        g_nvmlLib = nullptr;
+    }
+    #endif
     initialized_ = false;
 #endif
 }
@@ -143,8 +240,8 @@ bool GPUMonitor::update() {
 
 std::vector<GPUInfo> GPUMonitor::getGPUInfo() {
     std::vector<GPUInfo> infos;
-    
-#ifdef _WIN32
+
+#if defined(_WIN32)
     if (!initialized_ || !g_nvmlDll) {
         // Try DXGI fallback for basic info - enumerate all adapters
         IDXGIFactory* pFactory = nullptr;
@@ -158,22 +255,22 @@ std::vector<GPUInfo> GPUMonitor::getGPUInfo() {
                         pAdapter->Release();
                         continue;
                     }
-                    
+
                     GPUInfo info;
                     info.available = true;
                     info.index = static_cast<int>(i);
-                    
+
                     // Convert wide string to narrow
                     char name[128];
                     WideCharToMultiByte(CP_UTF8, 0, desc.Description, -1, name, sizeof(name), NULL, NULL);
                     info.name = name;
-                    
+
                     // DXGI gives dedicated video memory
                     info.total_vram_gb = static_cast<double>(desc.DedicatedVideoMemory) / (1024.0 * 1024.0 * 1024.0);
                     // Note: DXGI doesn't give current usage, only total
                     info.used_vram_gb = 0;
                     info.free_vram_gb = info.total_vram_gb;
-                    
+
                     infos.push_back(info);
                 }
                 pAdapter->Release();
@@ -182,7 +279,13 @@ std::vector<GPUInfo> GPUMonitor::getGPUInfo() {
         }
         return infos;
     }
-    
+#elif defined(__linux__)
+    if (!initialized_ || !g_nvmlLib) {
+        return infos;
+    }
+#endif
+
+#if defined(_WIN32) || defined(__linux__)
     // NVML path - enumerate all GPUs
     for (int i = 0; i < gpu_count_; i++) {
         GPUInfo info;

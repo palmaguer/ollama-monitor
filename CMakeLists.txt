@@ -31,6 +31,13 @@ if(WIN32)
     target_link_libraries(ollama-monitor winhttp dxgi)
 endif()
 
+# Linux/WSL2 specific settings
+if(UNIX AND NOT APPLE)
+    # libcurl for HTTP requests, dl for dynamic loading
+    find_package(CURL REQUIRED)
+    target_link_libraries(ollama-monitor CURL::libcurl dl)
+endif()
+
 # Set compiler-specific options
 if(MSVC)
     target_compile_options(ollama-monitor PRIVATE /W4)
