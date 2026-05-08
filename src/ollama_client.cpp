@@ -336,6 +336,7 @@ std::unique_ptr<OllamaStatus> OllamaClient::getStatus() {
                         std::string model_json = models_array.substr(start, i - start + 1);
                         auto model = parseRunningModel(model_json);
                         if (!model.name.empty()) {
+                            model.model_detail = getModelDetail(model.name);
                             status->models.push_back(model);
                         }
                     }
@@ -345,6 +346,84 @@ std::unique_ptr<OllamaStatus> OllamaClient::getStatus() {
     }
     
     return status;
+}
+
+OllamaModelDetail OllamaClient::getModelDetail(const std::string& model_name) {
+    OllamaModelDetail detail;
+    
+    std::string endpoint = "/api/show";
+    
+    // Construct JSON body for POST request
+    std::string body = "{\"model\":\"" + model_name + "\"}";
+    
+    // For now, only implement via libcurl on Linux
+#ifdef __linux__
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        return detail;
+    }
+    
+    std::string url = base_url_ + endpoint;
+    std::string response;
+    
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.length());
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);
+    
+    struct curl_slist* headers = nullptr;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, +[](char* ptr, size_t size, size_t nmemb, void* userdata) -> size_t {
+        std::string* str = static_cast<std::string*>(userdata);
+        str->append(ptr, size * nmemb);
+        return size * nmemb;
+    });
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    
+    CURLcode res = curl_easy_perform(curl);
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+    
+    if (res != CURLE_OK || response.empty()) {
+        return detail;
+    }
+#elif _WIN32
+    // On Windows, skip model details via /api/show for now
+    // Would need POST support via WinHTTP
+    (void)body;
+    return detail;
+#endif
+    
+    // Parse model_info for architecture
+    detail.architecture = extractStringValue(response, "general.architecture");
+    
+    // Search for context_length in the model_info block
+    // Key format: "<architecture>.context_length": <value>
+    std::string ctx_key = ".context_length\":";
+    size_t ctx_pos = response.rfind(ctx_key);
+    if (ctx_pos == std::string::npos) {
+        ctx_key = ".context_length\": ";
+        ctx_pos = response.rfind(ctx_key);
+    }
+    if (ctx_pos != std::string::npos) {
+        ctx_pos += ctx_key.length();
+        while (ctx_pos < response.length() && std::isspace(response[ctx_pos])) {
+            ctx_pos++;
+        }
+        size_t ctx_end = response.find_first_of(",}", ctx_pos);
+        if (ctx_end != std::string::npos) {
+            std::string num_str = trim(response.substr(ctx_pos, ctx_end - ctx_pos));
+            try {
+                detail.context_length = std::stoll(num_str);
+            } catch (...) {
+            }
+        }
+    }
+    
+    return detail;
 }
 
 std::vector<OllamaModel> OllamaClient::getModels() {

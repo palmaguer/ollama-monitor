@@ -254,18 +254,27 @@ void ConsoleUI::displayRunningModels(const std::vector<OllamaRunningModel>& mode
               << std::setw(12) << "SIZE"
               << std::setw(12) << "PARAMS"
               << std::setw(10) << "QUANT"
+              << std::setw(10) << "CTX"
               << std::setw(12) << "EXPIRES"
               << "\033[0m";
     clearLine();
     std::cout << "\n";
     
     for (const auto& model : models) {
+        std::string ctx_str;
+        if (model.model_detail.context_length > 0) {
+            ctx_str = std::to_string(model.model_detail.context_length / 1024) + "K";
+        } else {
+            ctx_str = "-";
+        }
+        
         std::cout << "  \033[32m" << std::left
                   << std::setw(30) << truncateString(model.name, 29)
                   << "\033[0m"
                   << std::setw(12) << formatBytes(model.size)
                   << std::setw(12) << model.details.parameter_size
                   << std::setw(10) << model.details.quantization_level
+                  << std::setw(10) << ctx_str
                   << std::setw(12) << formatTimeUntil(model.expires_at);
         clearLine();
         std::cout << "\n";
