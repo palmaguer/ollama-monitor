@@ -11,6 +11,8 @@ struct AppConfig {
     std::string log_format = "csv";
     std::string log_directory;
     int sparkline_length = 20;
+    int alert_temp_warning = 75;
+    int alert_temp_critical = 85;
 
     static AppConfig defaults() { return AppConfig{}; }
 };

@@ -74,6 +74,12 @@ AppConfig ConfigManager::load() {
         if (j.contains("theme")) config_.theme = j["theme"];
         if (j.contains("sparkline_length")) config_.sparkline_length = j["sparkline_length"];
 
+        if (j.contains("alerts")) {
+            auto& alerts = j["alerts"];
+            if (alerts.contains("temp_warning")) config_.alert_temp_warning = alerts["temp_warning"];
+            if (alerts.contains("temp_critical")) config_.alert_temp_critical = alerts["temp_critical"];
+        }
+
         if (j.contains("logging")) {
             auto& log = j["logging"];
             if (log.contains("enabled")) config_.logging_enabled = log["enabled"];
@@ -96,6 +102,8 @@ void ConfigManager::save(const AppConfig& config) {
     j["ollama_url"] = config.ollama_url;
     j["theme"] = config.theme;
     j["sparkline_length"] = config.sparkline_length;
+    j["alerts"]["temp_warning"] = config.alert_temp_warning;
+    j["alerts"]["temp_critical"] = config.alert_temp_critical;
     j["logging"]["enabled"] = config.logging_enabled;
     j["logging"]["format"] = config.log_format;
     j["logging"]["directory"] = config.log_directory;

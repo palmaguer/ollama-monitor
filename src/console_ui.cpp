@@ -196,12 +196,28 @@ void ConsoleUI::displayGPUInfo(const std::vector<GPUInfo>& gpu_infos, const std:
         std::cout << "\n";
 
         std::cout << "  \033[1mTemp:\033[0m ";
-        std::cout << theme_.ansi(barColor(theme_, gpu_info.temperature_c > 60 ? 70 + (gpu_info.temperature_c - 60) * 2 : 30));
-        std::cout << gpu_info.temperature_c << " C" << theme_.ansi(theme_.reset) << "  ";
-
+        if (gpu_info.temperature_c >= alert_temp_critical_) {
+            std::cout << "\033[5;1;31m";  // blink + bold + red
+            std::cout << "\xe2\x9a\xa0 ";  // ⚠
+            std::cout << gpu_info.temperature_c << " C (CRITICAL)" << theme_.ansi(theme_.reset);
+        } else if (gpu_info.temperature_c >= alert_temp_warning_) {
+            std::cout << "\033[1;33m";  // bold + yellow
+            std::cout << gpu_info.temperature_c << " C (WARNING)" << theme_.ansi(theme_.reset);
+        } else {
+            std::cout << theme_.ansi(theme_.color_good) << gpu_info.temperature_c << " C" << theme_.ansi(theme_.reset);
+        }
+        std::cout << "  ";
         std::cout << "\033[1mPower:\033[0m " << gpu_info.power_watts << " W";
         clearLine();
         std::cout << "\n";
+
+        if (gpu_info.temperature_c >= alert_temp_critical_) {
+            std::cout << "    \033[5;1;31m\xe2\x9a\xa0 TEMP ALERT: " << gpu_info.temperature_c
+                      << " C exceeds critical threshold ("
+                      << alert_temp_critical_ << " C)\033[0m";
+            clearLine();
+            std::cout << "\n";
+        }
 
         if (gpu_infos.size() > 1 && idx < gpu_infos.size() - 1) {
             clearLine();

@@ -35,12 +35,18 @@ public:
     void toggleTheme() {
         theme_ = theme_.is_light ? Theme::dark() : Theme::light();
     }
+    void setAlertThresholds(int warning, int critical) {
+        alert_temp_warning_ = warning;
+        alert_temp_critical_ = critical;
+    }
 
 private:
     int refresh_rate_;
     bool no_clear_ = false;
     bool paused_ = false;
     Theme theme_;
+    int alert_temp_warning_ = 75;
+    int alert_temp_critical_ = 85;
     
     // Helper methods for formatting
     std::string formatBytes(int64_t bytes) const;
