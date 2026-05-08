@@ -13,6 +13,7 @@ set(SOURCES
     src/gpu_monitor.cpp
     src/console_ui.cpp
     src/config_manager.cpp
+    src/system_monitor.cpp
 )
 
 # Header files
@@ -21,6 +22,7 @@ set(HEADERS
     include/gpu_monitor.h
     include/console_ui.h
     include/config_manager.h
+    include/system_monitor.h
 )
 
 # Create executable
