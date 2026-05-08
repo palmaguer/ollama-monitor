@@ -7,6 +7,7 @@
 #include "../include/ollama_client.h"
 #include "../include/gpu_monitor.h"
 #include "../include/console_ui.h"
+#include "../include/config_manager.h"
 
 // Global flag for graceful shutdown
 std::atomic<bool> g_running(true);
@@ -21,6 +22,7 @@ void printUsage(const char* program_name) {
     std::cout << "Usage: " << program_name << " [OPTIONS]\n\n";
     std::cout << "Options:\n";
     std::cout << "  -h, --help           Show this help message\n";
+    std::cout << "  -c, --config <path>  Config file path (default: ~/.config/ollama-monitor/config.json)\n";
     std::cout << "  -r, --refresh <sec>  Set refresh rate in seconds (default: 1)\n";
     std::cout << "  -u, --url <url>      Ollama server URL (default: http://localhost:11434)\n";
     std::cout << "  -1, --once           Run once and exit (for testing)\n";
@@ -34,14 +36,31 @@ int main(int argc, char* argv[]) {
     std::string ollama_url = "http://localhost:11434";
     int run_count = 0;  // 0 = infinite
     bool no_clear = false;
+    std::string config_path;
     
-    // Parse command line arguments
+    // Parse command line arguments (first pass for --config)
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if ((arg == "-c" || arg == "--config") && i + 1 < argc) {
+            config_path = argv[++i];
+        }
+    }
+    
+    // Load config file
+    ConfigManager config_manager(config_path.empty() ? ConfigManager::defaultConfigPath() : config_path);
+    AppConfig config = config_manager.load();
+    refresh_rate = config.refresh_rate;
+    ollama_url = config.ollama_url;
+    
+    // Parse command line arguments (second pass for overrides)
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         
         if (arg == "-h" || arg == "--help") {
             printUsage(argv[0]);
             return 0;
+        } else if ((arg == "-c" || arg == "--config") && i + 1 < argc) {
+            i++; // already handled
         } else if ((arg == "-r" || arg == "--refresh") && i + 1 < argc) {
             refresh_rate = std::stoi(argv[++i]);
             if (refresh_rate < 1) refresh_rate = 1;
