@@ -358,8 +358,13 @@ void ConsoleUI::display(const DisplayInfo& info) {
     
     // Footer
     clearLine();
-    std::cout << "\n\033[90mPress Ctrl+C to exit | Refreshing every " 
-              << refresh_rate_ << "s\033[0m";
+    std::cout << "\n";
+    if (paused_) {
+        std::cout << "\033[1;33m  *** PAUSED *** Press SPACE to resume  \033[0m";
+    } else {
+        std::cout << "\033[90mPress SPACE to pause | Ctrl+C to exit | Refreshing every " 
+                  << refresh_rate_ << "s\033[0m";
+    }
     clearLine();
     std::cout << "\n";
     

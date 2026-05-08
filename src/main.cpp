@@ -8,9 +8,12 @@
 #include "../include/gpu_monitor.h"
 #include "../include/console_ui.h"
 #include "../include/config_manager.h"
+#include "../include/keyboard.h"
 
 // Global flag for graceful shutdown
 std::atomic<bool> g_running(true);
+std::atomic<bool> g_paused(false);
+bool g_raw_mode = false;
 
 void signalHandler(int signum) {
     (void)signum;
@@ -80,6 +83,10 @@ int main(int argc, char* argv[]) {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
     
+    // Enable raw keyboard input
+    enableRawInput();
+    g_raw_mode = true;
+    
     // Initialize components
     OllamaClient ollama_client(ollama_url);
     GPUMonitor gpu_monitor;
@@ -98,33 +105,60 @@ int main(int argc, char* argv[]) {
     
     // Main loop
     int iterations = 0;
+    std::vector<GPUInfo> last_gpu;
+    std::unique_ptr<OllamaStatus> last_status;
+    std::vector<OllamaModel> last_models;
+    
     while (g_running) {
-        DisplayInfo info;
-        
-        // Gather GPU information
-        info.gpu_infos = gpu_monitor.getGPUInfo();
-        
-        // Gather Ollama information
-        info.ollama_status = ollama_client.getStatus();
-        info.available_models = ollama_client.getModels();
-        
-        // Display
-        ui.display(info);
-        
-        iterations++;
-        
-        // Check if we've hit the run count limit
-        if (run_count > 0 && iterations >= run_count) {
-            break;
+        // Check for keyboard input
+        if (keyPressed()) {
+            int c = readKey();
+            if (c == ' ' || c == 'p' || c == 'P') {
+                g_paused = !g_paused;
+                ui.setPaused(g_paused);
+            }
         }
         
-        // Wait for next refresh
+        DisplayInfo info;
+        
+        if (!g_paused) {
+            info.gpu_infos = gpu_monitor.getGPUInfo();
+            info.ollama_status = ollama_client.getStatus();
+            info.available_models = ollama_client.getModels();
+            
+            last_gpu = info.gpu_infos;
+            last_status = info.ollama_status ? std::make_unique<OllamaStatus>(*info.ollama_status) : nullptr;
+            last_models = info.available_models;
+        } else {
+            info.gpu_infos = last_gpu;
+            info.ollama_status = last_status ? std::make_unique<OllamaStatus>(*last_status) : nullptr;
+            info.available_models = last_models;
+        }
+        
+        ui.display(info);
+        
+        if (!g_paused) {
+            iterations++;
+            if (run_count > 0 && iterations >= run_count) {
+                break;
+            }
+        }
+        
         for (int i = 0; i < refresh_rate * 10 && g_running; i++) {
+            if (keyPressed()) {
+                int c = readKey();
+                if (c == ' ' || c == 'p' || c == 'P') {
+                    g_paused = !g_paused;
+                    ui.setPaused(g_paused);
+                }
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
     
     // Clean exit
+    disableRawInput();
+    g_raw_mode = false;
     if (run_count == 0) {
         std::cout << "\n\033[0mExiting...\n";
     }

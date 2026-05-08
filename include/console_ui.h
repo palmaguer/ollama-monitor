@@ -23,10 +23,13 @@ public:
     void display(const DisplayInfo& info);
     void refreshRate(int seconds) { refresh_rate_ = seconds; }
     void setNoClear(bool no_clear) { no_clear_ = no_clear; }
+    void setPaused(bool paused) { paused_ = paused; }
+    bool isPaused() const { return paused_; }
 
 private:
     int refresh_rate_;
     bool no_clear_ = false;
+    bool paused_ = false;
     
     // Helper methods for formatting
     std::string formatBytes(int64_t bytes) const;
