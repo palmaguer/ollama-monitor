@@ -20,6 +20,9 @@ temperature, power), running models, and available models across **Windows** and
 
 ---
 
+## What's New in v1.1.1
+- **UTF-8 Progress Bars** - Replaced `|` pipe characters with Unicode block chars (`█`/`░`) for cleaner output.
+
 ## What's New in v1.1.0
 
 - **Linux/WSL2 Support** — Full cross-platform support. Now runs natively on **Ubuntu**, **Debian**, and 
@@ -112,27 +115,16 @@ installed and running, **build-essential**, **cmake**, **libcurl4-openssl-dev** 
 ### Build Steps
 
 **Windows:**
-```powershell
-git clone https://github.com/palmaguer/ollama-monitor.git
-cd ollama-monitor
-cmake -B build
-cmake --build build --config Release
-# Output: build/Release/ollama-monitor.exe
-```
+
+See the dedicated PowerShell guide:
+
+ - [Windows Compilation using Powershell](./docs/howto/windows-compilation-powershell.md)
 
 **Linux / WSL2:**
-```bash
-sudo apt install build-essential cmake libcurl4-openssl-dev
 
-git clone https://github.com/palmaguer/ollama-monitor.git
+See the dedicated Linux guide:
 
-cd ollama-monitor
-
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build
-
-# Output: build/ollama-monitor
-```
+ - [Linux / WSL2 Compilation](./docs/howto/linux-compilation.md)
 
 ---
 
@@ -158,30 +150,26 @@ cmake --build build
 ### Example Output
 
 ```
- OLLAMA MONITOR                                              2026-01-09 19:36:07
+ OLLAMA MONITOR                                              2026-05-07 22:35:50
 
 === GPU Status ===
-  GPU 0: NVIDIA GeForce RTX 5090
-  VRAM: [||||||                        ] 25.3% (4.03/15.93 GB)
-  Util: [||||||||||||                  ] 42%
-  Temp: 62 C  Power: 145 W
-
   GPU: NVIDIA GeForce RTX 4080 SUPER
-  VRAM: [||||||||||||||||||||||||      ] 82.5% (13.19/15.99 GB)
-  Util: [||||                          ] 16%
-  Temp: 36 C  Power: 32 W
+  VRAM: ████████████████████████░░░░░░ 82.6% (13.21/15.99 GB)
+  Util: █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 4%
+  Temp: 42 C  Power: 31 W
 
 === Running Models ===
   MODEL                         SIZE        PARAMS      QUANT     EXPIRES
-  llama3:8b                     4.7 GB      8B          Q4_K_M    4m 32s
+  qwen2.5-coder:14b             17.2 GB     14.8B       Q4_K_M    Expired
 
-=== Available Models (5) ===
+=== Available Models (6) ===
   MODEL                              SIZE
-  devstral-small-2:latest            14.1 GB
-  nomic-embed-text-v2-moe:latest     913.3 MB
-  ministral-3:14b-instruct-2512-q... 8.5 GB
-  qwen3-vl:30b-a3b-instruct-q4_K_M   18.2 GB
-  nomic-embed-text:latest            261.6 MB
+  llama3.1:8b                        4.6 GB
+  qwen3:14b                          8.6 GB
+  qwen2.5-coder:14b                  8.4 GB
+  deepseek-coder-v2:16b              8.3 GB
+  qwen2.5-coder:7b                   4.4 GB
+  qwen2.5:14b-instruct-q4_K_M        8.4 GB
 
 Press Ctrl+C to exit | Refreshing every 1s
 ```
