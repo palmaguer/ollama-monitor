@@ -9,6 +9,7 @@ struct AppConfig {
     std::string theme = "dark";
     bool logging_enabled = false;
     std::string log_format = "csv";
+    std::string log_directory;
 
     static AppConfig defaults() { return AppConfig{}; }
 };

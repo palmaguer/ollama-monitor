@@ -77,6 +77,7 @@ AppConfig ConfigManager::load() {
             auto& log = j["logging"];
             if (log.contains("enabled")) config_.logging_enabled = log["enabled"];
             if (log.contains("format")) config_.log_format = log["format"];
+            if (log.contains("directory")) config_.log_directory = log["directory"];
         }
     } catch (const std::exception& e) {
         std::cerr << "\033[33mWarning: Failed to parse config file: " << e.what() << "\033[0m\n";
@@ -95,6 +96,7 @@ void ConfigManager::save(const AppConfig& config) {
     j["theme"] = config.theme;
     j["logging"]["enabled"] = config.logging_enabled;
     j["logging"]["format"] = config.log_format;
+    j["logging"]["directory"] = config.log_directory;
 
     std::ofstream f(path_);
     f << j.dump(4) << std::endl;
