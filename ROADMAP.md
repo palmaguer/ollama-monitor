@@ -6,11 +6,14 @@
 - Multi-GPU display
 - GitHub Actions CI/CD
 - Screen flicker fix
+- UTF-8 block progress bars
 
-## v1.2.0 — Next
+## v1.2.0 — In Progress
+
+### Done
+- **Config file** — `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme)
 
 ### Must-have
-- **Config file** — `~/.ollama/monitor-config.json` for persistent settings (refresh rate, URL, theme)
 - **Pause/Resume** — toggle live updates with a keybind (e.g. `Space`)
 - **Model details** — show context size, architecture from `/api/show`
 
