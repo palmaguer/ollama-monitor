@@ -341,6 +341,62 @@ void ConsoleUI::displayOllamaInfo(const std::unique_ptr<OllamaStatus>& status) {
     displayRunningModels(status->models);
 }
 
+void ConsoleUI::displaySystemStats(const SystemInfo& info) {
+    if (!info.available) return;
+
+    clearLine();
+    std::cout << "\n\033[1;32m";  // Green bold
+    std::cout << "=== System ===\033[0m";
+    clearLine();
+    std::cout << "\n";
+
+    // CPU
+    std::cout << "  \033[1mCPU:\033[0m ";
+    if (info.cpu_percent > 90) {
+        std::cout << "\033[31m";
+    } else if (info.cpu_percent > 70) {
+        std::cout << "\033[33m";
+    } else {
+        std::cout << "\033[32m";
+    }
+    std::cout << getProgressBar(info.cpu_percent, 20) << " "
+              << std::fixed << std::setprecision(1) << info.cpu_percent << "%\033[0m";
+    clearLine();
+    std::cout << "\n";
+
+    // RAM
+    std::cout << "  \033[1mRAM:\033[0m ";
+    if (info.ram_percent > 90) {
+        std::cout << "\033[31m";
+    } else if (info.ram_percent > 70) {
+        std::cout << "\033[33m";
+    } else {
+        std::cout << "\033[32m";
+    }
+    std::cout << getProgressBar(info.ram_percent, 20) << " "
+              << std::fixed << std::setprecision(1) << info.ram_percent << "% "
+              << "(" << std::setprecision(2) << info.ram_used_gb << "/"
+              << std::setprecision(2) << info.ram_total_gb << " GB)\033[0m";
+    clearLine();
+    std::cout << "\n";
+
+    // Disk
+    std::cout << "  \033[1mDisk:\033[0m ";
+    if (info.disk_percent > 90) {
+        std::cout << "\033[31m";
+    } else if (info.disk_percent > 70) {
+        std::cout << "\033[33m";
+    } else {
+        std::cout << "\033[32m";
+    }
+    std::cout << getProgressBar(info.disk_percent, 20) << " "
+              << std::fixed << std::setprecision(1) << info.disk_percent << "% "
+              << "(" << std::setprecision(2) << info.disk_used_gb << "/"
+              << std::setprecision(2) << info.disk_total_gb << " GB)\033[0m";
+    clearLine();
+    std::cout << "\n";
+}
+
 void ConsoleUI::display(const DisplayInfo& info) {
     if (!no_clear_) {
         // Move cursor to home position without clearing - prevents flicker
@@ -356,6 +412,9 @@ void ConsoleUI::display(const DisplayInfo& info) {
     clearLine();
     std::cout << "\n";
     
+    // System Stats (CPU, RAM, Disk)
+    displaySystemStats(info.system_info);
+
     // GPU Information
     displayGPUInfo(info.gpu_infos);
     

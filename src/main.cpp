@@ -6,6 +6,7 @@
 
 #include "../include/ollama_client.h"
 #include "../include/gpu_monitor.h"
+#include "../include/system_monitor.h"
 #include "../include/console_ui.h"
 #include "../include/config_manager.h"
 #include "../include/keyboard.h"
@@ -90,6 +91,7 @@ int main(int argc, char* argv[]) {
     // Initialize components
     OllamaClient ollama_client(ollama_url);
     GPUMonitor gpu_monitor;
+    SystemMonitor system_monitor;
     ConsoleUI ui;
     
     ui.refreshRate(refresh_rate);
@@ -108,6 +110,7 @@ int main(int argc, char* argv[]) {
     std::vector<GPUInfo> last_gpu;
     std::unique_ptr<OllamaStatus> last_status;
     std::vector<OllamaModel> last_models;
+    SystemInfo last_sys;
     
     while (g_running) {
         // Check for keyboard input
@@ -125,14 +128,17 @@ int main(int argc, char* argv[]) {
             info.gpu_infos = gpu_monitor.getGPUInfo();
             info.ollama_status = ollama_client.getStatus();
             info.available_models = ollama_client.getModels();
+            info.system_info = system_monitor.getInfo();
             
             last_gpu = info.gpu_infos;
             last_status = info.ollama_status ? std::make_unique<OllamaStatus>(*info.ollama_status) : nullptr;
             last_models = info.available_models;
+            last_sys = info.system_info;
         } else {
             info.gpu_infos = last_gpu;
             info.ollama_status = last_status ? std::make_unique<OllamaStatus>(*last_status) : nullptr;
             info.available_models = last_models;
+            info.system_info = last_sys;
         }
         
         ui.display(info);

@@ -4,11 +4,13 @@
 #include <vector>
 #include "ollama_client.h"
 #include "gpu_monitor.h"
+#include "system_monitor.h"
 
 struct DisplayInfo {
     std::vector<GPUInfo> gpu_infos;
     std::unique_ptr<OllamaStatus> ollama_status;
     std::vector<OllamaModel> available_models;
+    SystemInfo system_info;
     std::string current_time;
 };
 
@@ -42,4 +44,5 @@ private:
     void displayOllamaInfo(const std::unique_ptr<OllamaStatus>& status);
     void displayRunningModels(const std::vector<OllamaRunningModel>& models);
     void displayAvailableModels(const std::vector<OllamaModel>& models);
+    void displaySystemStats(const SystemInfo& info);
 };
