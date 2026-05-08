@@ -14,6 +14,7 @@ set(SOURCES
     src/console_ui.cpp
     src/config_manager.cpp
     src/system_monitor.cpp
+    src/logger.cpp
 )
 
 # Header files
@@ -23,6 +24,7 @@ set(HEADERS
     include/console_ui.h
     include/config_manager.h
     include/system_monitor.h
+    include/logger.h
 )
 
 # Create executable

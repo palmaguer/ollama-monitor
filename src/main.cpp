@@ -7,6 +7,7 @@
 #include "../include/ollama_client.h"
 #include "../include/gpu_monitor.h"
 #include "../include/system_monitor.h"
+#include "../include/logger.h"
 #include "../include/console_ui.h"
 #include "../include/config_manager.h"
 #include "../include/keyboard.h"
@@ -93,6 +94,10 @@ int main(int argc, char* argv[]) {
     GPUMonitor gpu_monitor;
     SystemMonitor system_monitor;
     ConsoleUI ui;
+    std::unique_ptr<Logger> logger;
+    if (config.logging_enabled) {
+        logger = std::make_unique<Logger>(config.log_directory, config.log_format);
+    }
     
     ui.refreshRate(refresh_rate);
     ui.setNoClear(no_clear);
@@ -134,7 +139,11 @@ int main(int argc, char* argv[]) {
             info.ollama_status = ollama_client.getStatus();
             info.available_models = ollama_client.getModels();
             info.system_info = system_monitor.getInfo();
-            
+
+            if (logger) {
+                logger->log(info);
+            }
+
             last_gpu = info.gpu_infos;
             last_status = info.ollama_status ? std::make_unique<OllamaStatus>(*info.ollama_status) : nullptr;
             last_models = info.available_models;
