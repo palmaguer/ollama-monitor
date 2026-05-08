@@ -4,12 +4,18 @@ project(ollama-monitor VERSION 1.1.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# nlohmann/json is included directly at include/nlohmann/json.hpp
+
 # Source files
 set(SOURCES
     src/main.cpp
     src/ollama_client.cpp
     src/gpu_monitor.cpp
     src/console_ui.cpp
+    src/config_manager.cpp
+    src/system_monitor.cpp
+    src/logger.cpp
+    src/metrics_history.cpp
 )
 
 # Header files
@@ -17,6 +23,10 @@ set(HEADERS
     include/ollama_client.h
     include/gpu_monitor.h
     include/console_ui.h
+    include/config_manager.h
+    include/system_monitor.h
+    include/logger.h
+    include/metrics_history.h
 )
 
 # Create executable

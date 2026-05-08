@@ -6,22 +6,25 @@
 - Multi-GPU display
 - GitHub Actions CI/CD
 - Screen flicker fix
+- UTF-8 block progress bars
 
-## v1.2.0 — Next
+## v1.2.0 — In Progress
+
+### Done
+- **Config file** — `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme, logging, alerts)
+- **Pause/Resume** — toggle live updates with SPACE key
+- **Model details** — context size and architecture from `/api/show`
+- **System stats** — CPU, RAM, disk usage via `/proc` (Linux)
+- **Themes** — dark/light toggle via `T` key, configurable in config file
+- **Logging** — optional CSV/JSON metrics dump to `~/.ollama/logs/` with daily rotation
+- **GPU history sparklines** — inline terminal bar charts over configurable history window
+- **Temperature alerts** — visual warning (yellow / red blink) when thresholds exceeded
 
 ### Must-have
-- **Config file** — `~/.ollama/monitor-config.json` for persistent settings (refresh rate, URL, theme)
-- **Pause/Resume** — toggle live updates with a keybind (e.g. `Space`)
-- **Model details** — show context size, architecture from `/api/show`
 
 ### Should-have
-- **System stats** — CPU, RAM, disk usage via `/proc` (Linux) / `GetSystemInfo` (Windows)
-- **Themes** — dark/light toggle, 2-3 presets
-- **Logging** — optional CSV/JSON metrics dump to `~/.ollama/logs/`
 
 ### Nice-to-have
-- **GPU history sparklines** — inline terminal bar charts over time
-- **Temperature alerts** — visual warning when thresholds exceeded
 
 ## Future
 

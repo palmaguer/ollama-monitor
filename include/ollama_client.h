@@ -13,6 +13,12 @@ struct OllamaModel {
     std::string modified_at;
 };
 
+struct OllamaModelDetail {
+    std::string architecture;
+    int64_t context_length = 0;
+    std::string template_str;
+};
+
 struct OllamaRunningModel {
     std::string name;
     std::string model;
@@ -28,6 +34,8 @@ struct OllamaRunningModel {
         std::string parameter_size;
         std::string quantization_level;
     } details;
+    
+    OllamaModelDetail model_detail;
 };
 
 struct OllamaStatus {
@@ -43,6 +51,7 @@ public:
     
     std::unique_ptr<OllamaStatus> getStatus();
     std::vector<OllamaModel> getModels();
+    OllamaModelDetail getModelDetail(const std::string& model_name);
 
 private:
     std::string base_url_;

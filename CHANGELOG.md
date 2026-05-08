@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Config File Support** - `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme, logging). CLI flags override config values.
+- **Pause/Resume** - Press SPACE or P to freeze/resume the display
+- **Model Details** - Context size and architecture shown for each running model (from `/api/show`)
+- **System Stats** - CPU, RAM, and disk usage monitoring via `/proc`
+- **Themes** - Dark/light theme toggle with `T` key, configured via `theme` field in config
+- **Logging** - Optional CSV/JSON metrics logging to `~/.ollama/logs/` with daily rotation
+- **GPU Sparklines** - Inline Unicode sparklines (▁▂▃▄▅▆▇█) showing utilization and VRAM history per GPU
+- **Temperature Alerts** - Visual warnings at configurable thresholds (yellow at 75°C, red blink at 85°C)
+
 ## [v1.1.1] - 2026-05-07
 
 ### Changed

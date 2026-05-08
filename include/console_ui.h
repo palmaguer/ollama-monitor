@@ -4,11 +4,16 @@
 #include <vector>
 #include "ollama_client.h"
 #include "gpu_monitor.h"
+#include "system_monitor.h"
+#include "metrics_history.h"
+#include "theme.h"
 
 struct DisplayInfo {
     std::vector<GPUInfo> gpu_infos;
     std::unique_ptr<OllamaStatus> ollama_status;
     std::vector<OllamaModel> available_models;
+    SystemInfo system_info;
+    std::vector<GpuHistory> gpu_history;
     std::string current_time;
 };
 
@@ -23,10 +28,25 @@ public:
     void display(const DisplayInfo& info);
     void refreshRate(int seconds) { refresh_rate_ = seconds; }
     void setNoClear(bool no_clear) { no_clear_ = no_clear; }
+    void setPaused(bool paused) { paused_ = paused; }
+    bool isPaused() const { return paused_; }
+    void setTheme(const Theme& theme) { theme_ = theme; }
+    const Theme& getTheme() const { return theme_; }
+    void toggleTheme() {
+        theme_ = theme_.is_light ? Theme::dark() : Theme::light();
+    }
+    void setAlertThresholds(int warning, int critical) {
+        alert_temp_warning_ = warning;
+        alert_temp_critical_ = critical;
+    }
 
 private:
     int refresh_rate_;
     bool no_clear_ = false;
+    bool paused_ = false;
+    Theme theme_;
+    int alert_temp_warning_ = 75;
+    int alert_temp_critical_ = 85;
     
     // Helper methods for formatting
     std::string formatBytes(int64_t bytes) const;
@@ -35,8 +55,9 @@ private:
     std::string getCurrentTime() const;
     std::string getProgressBar(double percentage, int width = 20) const;
     
-    void displayGPUInfo(const std::vector<GPUInfo>& gpu_infos);
+    void displayGPUInfo(const std::vector<GPUInfo>& gpu_infos, const std::vector<GpuHistory>& gpu_history);
     void displayOllamaInfo(const std::unique_ptr<OllamaStatus>& status);
     void displayRunningModels(const std::vector<OllamaRunningModel>& models);
     void displayAvailableModels(const std::vector<OllamaModel>& models);
+    void displaySystemStats(const SystemInfo& info);
 };
