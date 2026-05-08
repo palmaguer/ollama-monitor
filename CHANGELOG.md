@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **System Stats** - CPU, RAM, and disk usage monitoring via `/proc`
 - **Themes** - Dark/light theme toggle with `T` key, configured via `theme` field in config
 - **Logging** - Optional CSV/JSON metrics logging to `~/.ollama/logs/` with daily rotation
+- **GPU Sparklines** - Inline Unicode sparklines (▁▂▃▄▅▆▇█) showing utilization and VRAM history per GPU
+- **Temperature Alerts** - Visual warnings at configurable thresholds (yellow at 75°C, red blink at 85°C)
 
 ## [v1.1.1] - 2026-05-07
 

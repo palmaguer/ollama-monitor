@@ -22,6 +22,11 @@ ollama-monitor -c /path/to/config.json
     "refresh_rate": 2,
     "ollama_url": "http://localhost:11434",
     "theme": "dark",
+    "sparkline_length": 20,
+    "alerts": {
+        "temp_warning": 75,
+        "temp_critical": 85
+    },
     "logging": {
         "enabled": false,
         "format": "csv",
@@ -40,6 +45,9 @@ ollama-monitor -c /path/to/config.json
 | `logging.enabled` | bool | `false` | Enable metrics logging to file |
 | `logging.format` | string | `"csv"` | Log format (`"csv"` or `"json"`) |
 | `logging.directory` | string | `""` | Log directory (empty = `~/.ollama/logs/` on Linux, `%APPDATA%\ollama-monitor\logs` on Windows) |
+| `sparkline_length` | int | `20` | History window for GPU sparklines (0 = disable) |
+| `alerts.temp_warning` | int | `75` | Temperature °C for yellow warning indicator |
+| `alerts.temp_critical` | int | `85` | Temperature °C for red blink alert |
 
 ## Features Added in v1.2.0
 
@@ -48,6 +56,12 @@ CPU, RAM, and disk usage displayed as a new System section with progress bars, a
 
 ### Themes
 Press `T` to toggle between dark (default) and light themes. Set `"theme": "light"` in config for persistent selection.
+
+### GPU Sparklines
+Unicode sparklines (▁▂▃▄▅▆▇█) displayed beside Util and VRAM progress bars, showing the last N snapshots. Configurable via `sparkline_length` (set to 0 to disable).
+
+### Temperature Alerts
+When GPU temperature exceeds `alerts.temp_warning` (default 75°C), the temperature value displays in bold yellow. When it exceeds `alerts.temp_critical` (default 85°C), it displays in blinking red with a ⚠ symbol and an alert line is added beneath the GPU section.
 
 ### Logging
 When enabled, writes a metrics snapshot each refresh cycle to a dated file:
