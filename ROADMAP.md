@@ -12,10 +12,10 @@
 
 ### Done
 - **Config file** — `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme)
+- **Pause/Resume** — toggle live updates with SPACE key
+- **Model details** — context size and architecture from `/api/show`
 
 ### Must-have
-- **Pause/Resume** — toggle live updates with a keybind (e.g. `Space`)
-- **Model details** — show context size, architecture from `/api/show`
 
 ### Should-have
 - **System stats** — CPU, RAM, disk usage via `/proc` (Linux) / `GetSystemInfo` (Windows)
