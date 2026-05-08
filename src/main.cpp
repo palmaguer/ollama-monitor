@@ -104,6 +104,7 @@ int main(int argc, char* argv[]) {
     if (config.theme == "light") {
         ui.setTheme(Theme::light());
     }
+    ui.setAlertThresholds(config.alert_temp_warning, config.alert_temp_critical);
     
     // Initial connection check
     if (!ollama_client.isConnected()) {
