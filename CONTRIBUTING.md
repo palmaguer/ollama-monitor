@@ -106,6 +106,19 @@ Example:
 4. **Approval**: PRs require at least one approve from maintainers before merging.
 
 
+## Release Notes and CHANGELOG
+
+- Releases are created by CI/CD when a tag like `v*` is pushed.
+
+- The release workflow tries to extract release notes from the matching section in `CHANGELOG.md` using the tag name (for example, `## [v1.1.2]`).
+
+- If no matching section is found, CI/CD falls back to GitHub auto-generated notes.
+
+- Maintainers can enable strict mode with `STRICT_CHANGELOG_RELEASE_NOTES=true` in the release workflow to fail releases when notes are missing.
+
+- Contributors should update `CHANGELOG.md` for user-facing changes so releases include curated notes instead of fallback notes.
+
+
 ## Community & Code of Conduct
 
 - **Communication:** Be respectful and constructive in all interactions. Report issues via GitHub Issues (https://github.com/palmaguer/ollama-monitor/issues).

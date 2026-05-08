@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  STRICT_CHANGELOG_RELEASE_NOTES: "false"
 
 jobs:
   build-linux:
@@ -28,7 +28,7 @@ jobs:
           cmake --build .
 
       - name: Upload Linux binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ollama-monitor-linux-x64
           path: build/ollama-monitor
@@ -48,7 +48,7 @@ jobs:
           cmake --build . --config Release
 
       - name: Upload Windows binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ollama-monitor-windows-x64
           path: build/Release/ollama-monitor.exe
@@ -61,13 +61,13 @@ jobs:
       contents: write
     steps:
       - name: Download Linux artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ollama-monitor-linux-x64
           path: release
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ollama-monitor-windows-x64
           path: release
@@ -75,14 +75,48 @@ jobs:
       - name: List release files
         run: ls -la release/
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            release/ollama-monitor
-            release/ollama-monitor.exe
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+      - name: Build release notes
+        id: notes
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          NOTES_FILE="release_notes.md"
+
+          awk -v tag="$TAG" '
+            $0 ~ "^## \\[" tag "\\]" {in_section=1; next}
+            in_section && $0 ~ "^## \\[" {exit}
+            in_section {print}
+          ' CHANGELOG.md > "$NOTES_FILE"
+
+          if [ ! -s "$NOTES_FILE" ] || ! grep -q '[^[:space:]]' "$NOTES_FILE"; then
+            if [ "${STRICT_CHANGELOG_RELEASE_NOTES}" = "true" ]; then
+              echo "ERROR: Missing release notes in CHANGELOG.md for tag ${TAG}" >&2
+              echo "Expected a section header like: ## [${TAG}]" >&2
+              exit 1
+            fi
+            echo "use_generated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_generated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release (changelog notes)
+        if: steps.notes.outputs.use_generated == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release/ollama-monitor \
+            release/ollama-monitor.exe \
+            --verify-tag \
+            --notes-file release_notes.md
+
+      - name: Create GitHub Release (generated notes fallback)
+        if: steps.notes.outputs.use_generated == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            release/ollama-monitor \
+            release/ollama-monitor.exe \
+            --verify-tag \
+            --generate-notes
