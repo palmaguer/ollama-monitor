@@ -11,7 +11,8 @@
 
 ConsoleUI::ConsoleUI() : refresh_rate_(1), no_clear_(false) {
 #ifdef _WIN32
-    // Enable ANSI escape sequences on Windows
+    // Enable UTF-8 output and ANSI escape sequences on Windows
+    SetConsoleOutputCP(CP_UTF8);
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
@@ -136,15 +137,14 @@ std::string ConsoleUI::getProgressBar(double percentage, int width) const {
     if (filled > width) filled = width;
     if (filled < 0) filled = 0;
     
-    std::string bar = "[";
+    std::string bar;
     for (int i = 0; i < width; i++) {
         if (i < filled) {
-            bar += "|";
+            bar += "\xe2\x96\x88"; // FULL BLOCK
         } else {
-            bar += " ";
+            bar += "\xe2\x96\x91"; // LIGHT SHADE
         }
     }
-    bar += "]";
     return bar;
 }
 
