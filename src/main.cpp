@@ -96,6 +96,9 @@ int main(int argc, char* argv[]) {
     
     ui.refreshRate(refresh_rate);
     ui.setNoClear(no_clear);
+    if (config.theme == "light") {
+        ui.setTheme(Theme::light());
+    }
     
     // Initial connection check
     if (!ollama_client.isConnected()) {
@@ -119,6 +122,8 @@ int main(int argc, char* argv[]) {
             if (c == ' ' || c == 'p' || c == 'P') {
                 g_paused = !g_paused;
                 ui.setPaused(g_paused);
+            } else if (c == 't' || c == 'T') {
+                ui.toggleTheme();
             }
         }
         
@@ -156,6 +161,8 @@ int main(int argc, char* argv[]) {
                 if (c == ' ' || c == 'p' || c == 'P') {
                     g_paused = !g_paused;
                     ui.setPaused(g_paused);
+                } else if (c == 't' || c == 'T') {
+                    ui.toggleTheme();
                 }
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));

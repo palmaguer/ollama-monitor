@@ -5,6 +5,7 @@
 #include "ollama_client.h"
 #include "gpu_monitor.h"
 #include "system_monitor.h"
+#include "theme.h"
 
 struct DisplayInfo {
     std::vector<GPUInfo> gpu_infos;
@@ -27,11 +28,17 @@ public:
     void setNoClear(bool no_clear) { no_clear_ = no_clear; }
     void setPaused(bool paused) { paused_ = paused; }
     bool isPaused() const { return paused_; }
+    void setTheme(const Theme& theme) { theme_ = theme; }
+    const Theme& getTheme() const { return theme_; }
+    void toggleTheme() {
+        theme_ = theme_.is_light ? Theme::dark() : Theme::light();
+    }
 
 private:
     int refresh_rate_;
     bool no_clear_ = false;
     bool paused_ = false;
+    Theme theme_;
     
     // Helper methods for formatting
     std::string formatBytes(int64_t bytes) const;
