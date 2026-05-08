@@ -15,6 +15,7 @@ set(SOURCES
     src/config_manager.cpp
     src/system_monitor.cpp
     src/logger.cpp
+    src/metrics_history.cpp
 )
 
 # Header files
@@ -25,6 +26,7 @@ set(HEADERS
     include/config_manager.h
     include/system_monitor.h
     include/logger.h
+    include/metrics_history.h
 )
 
 # Create executable

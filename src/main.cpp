@@ -119,6 +119,8 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<OllamaStatus> last_status;
     std::vector<OllamaModel> last_models;
     SystemInfo last_sys;
+    std::vector<GpuHistory> gpu_history;
+    std::vector<GpuHistory> last_gpu_history;
     
     while (g_running) {
         // Check for keyboard input
@@ -140,6 +142,17 @@ int main(int argc, char* argv[]) {
             info.available_models = ollama_client.getModels();
             info.system_info = system_monitor.getInfo();
 
+            if (info.gpu_infos.size() > gpu_history.size()) {
+                gpu_history.resize(info.gpu_infos.size(), GpuHistory(config.sparkline_length));
+            }
+            for (size_t i = 0; i < info.gpu_infos.size(); i++) {
+                if (info.gpu_infos[i].available) {
+                    gpu_history[i].push(info.gpu_infos[i].utilization_percent,
+                                        info.gpu_infos[i].getVRAMUsagePercent());
+                }
+            }
+            info.gpu_history = gpu_history;
+
             if (logger) {
                 logger->log(info);
             }
@@ -148,11 +161,13 @@ int main(int argc, char* argv[]) {
             last_status = info.ollama_status ? std::make_unique<OllamaStatus>(*info.ollama_status) : nullptr;
             last_models = info.available_models;
             last_sys = info.system_info;
+            last_gpu_history = gpu_history;
         } else {
             info.gpu_infos = last_gpu;
             info.ollama_status = last_status ? std::make_unique<OllamaStatus>(*last_status) : nullptr;
             info.available_models = last_models;
             info.system_info = last_sys;
+            info.gpu_history = last_gpu_history;
         }
         
         ui.display(info);

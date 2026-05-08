@@ -24,7 +24,8 @@ ollama-monitor -c /path/to/config.json
     "theme": "dark",
     "logging": {
         "enabled": false,
-        "format": "csv"
+        "format": "csv",
+        "directory": ""
     }
 }
 ```
@@ -38,6 +39,30 @@ ollama-monitor -c /path/to/config.json
 | `theme` | string | `"dark"` | Color theme (`"dark"` or `"light"`) |
 | `logging.enabled` | bool | `false` | Enable metrics logging to file |
 | `logging.format` | string | `"csv"` | Log format (`"csv"` or `"json"`) |
+| `logging.directory` | string | `""` | Log directory (empty = `~/.ollama/logs/` on Linux, `%APPDATA%\ollama-monitor\logs` on Windows) |
+
+## Features Added in v1.2.0
+
+### System Stats
+CPU, RAM, and disk usage displayed as a new System section with progress bars, above GPU information.
+
+### Themes
+Press `T` to toggle between dark (default) and light themes. Set `"theme": "light"` in config for persistent selection.
+
+### Logging
+When enabled, writes a metrics snapshot each refresh cycle to a dated file:
+- CSV: `ollama-monitor-YYYY-MM-DD.csv`
+- JSONL: `ollama-monitor-YYYY-MM-DD.jsonl`
+
+Fields logged: timestamp, CPU %, RAM %, disk %, GPU utilization, VRAM usage, running model names.
+
+### Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `SPACE` or `P` | Pause/Resume live updates |
+| `T` | Toggle dark/light theme |
+| `Ctrl+C` | Exit |
 
 ## Precedence
 

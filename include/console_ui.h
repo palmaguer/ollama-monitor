@@ -5,6 +5,7 @@
 #include "ollama_client.h"
 #include "gpu_monitor.h"
 #include "system_monitor.h"
+#include "metrics_history.h"
 #include "theme.h"
 
 struct DisplayInfo {
@@ -12,6 +13,7 @@ struct DisplayInfo {
     std::unique_ptr<OllamaStatus> ollama_status;
     std::vector<OllamaModel> available_models;
     SystemInfo system_info;
+    std::vector<GpuHistory> gpu_history;
     std::string current_time;
 };
 
@@ -47,7 +49,7 @@ private:
     std::string getCurrentTime() const;
     std::string getProgressBar(double percentage, int width = 20) const;
     
-    void displayGPUInfo(const std::vector<GPUInfo>& gpu_infos);
+    void displayGPUInfo(const std::vector<GPUInfo>& gpu_infos, const std::vector<GpuHistory>& gpu_history);
     void displayOllamaInfo(const std::unique_ptr<OllamaStatus>& status);
     void displayRunningModels(const std::vector<OllamaRunningModel>& models);
     void displayAvailableModels(const std::vector<OllamaModel>& models);
