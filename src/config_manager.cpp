@@ -72,6 +72,7 @@ AppConfig ConfigManager::load() {
         if (j.contains("refresh_rate")) config_.refresh_rate = j["refresh_rate"];
         if (j.contains("ollama_url")) config_.ollama_url = j["ollama_url"];
         if (j.contains("theme")) config_.theme = j["theme"];
+        if (j.contains("sparkline_length")) config_.sparkline_length = j["sparkline_length"];
 
         if (j.contains("logging")) {
             auto& log = j["logging"];
@@ -94,6 +95,7 @@ void ConfigManager::save(const AppConfig& config) {
     j["refresh_rate"] = config.refresh_rate;
     j["ollama_url"] = config.ollama_url;
     j["theme"] = config.theme;
+    j["sparkline_length"] = config.sparkline_length;
     j["logging"]["enabled"] = config.logging_enabled;
     j["logging"]["format"] = config.log_format;
     j["logging"]["directory"] = config.log_directory;

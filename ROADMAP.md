@@ -11,16 +11,16 @@
 ## v1.2.0 — In Progress
 
 ### Done
-- **Config file** — `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme)
+- **Config file** — `~/.config/ollama-monitor/config.json` for persistent settings (refresh rate, URL, theme, logging)
 - **Pause/Resume** — toggle live updates with SPACE key
 - **Model details** — context size and architecture from `/api/show`
+- **System stats** — CPU, RAM, disk usage via `/proc` (Linux)
+- **Themes** — dark/light toggle via `T` key, configurable in config file
+- **Logging** — optional CSV/JSON metrics dump to `~/.ollama/logs/` with daily rotation
 
 ### Must-have
 
 ### Should-have
-- **System stats** — CPU, RAM, disk usage via `/proc` (Linux) / `GetSystemInfo` (Windows)
-- **Themes** — dark/light toggle, 2-3 presets
-- **Logging** — optional CSV/JSON metrics dump to `~/.ollama/logs/`
 
 ### Nice-to-have
 - **GPU history sparklines** — inline terminal bar charts over time

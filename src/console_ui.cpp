@@ -144,7 +144,7 @@ static const std::string& barColor(const Theme& theme, double pct) {
     return theme.bar_good;
 }
 
-void ConsoleUI::displayGPUInfo(const std::vector<GPUInfo>& gpu_infos) {
+void ConsoleUI::displayGPUInfo(const std::vector<GPUInfo>& gpu_infos, const std::vector<GpuHistory>& gpu_history) {
     std::cout << theme_.ansi(theme_.section_gpu);
     std::cout << "=== GPU Status ===" << theme_.ansi(theme_.reset);
     clearLine();
@@ -179,6 +179,9 @@ void ConsoleUI::displayGPUInfo(const std::vector<GPUInfo>& gpu_infos) {
         std::cout << std::fixed << std::setprecision(1) << vram_percent << "% ";
         std::cout << "(" << std::setprecision(2) << gpu_info.used_vram_gb << "/"
                   << gpu_info.total_vram_gb << " GB)" << theme_.ansi(theme_.reset);
+        if (idx < gpu_history.size()) {
+            std::cout << " " << gpu_history[idx].getVRAMSparkline(12);
+        }
         clearLine();
         std::cout << "\n";
 
@@ -186,6 +189,9 @@ void ConsoleUI::displayGPUInfo(const std::vector<GPUInfo>& gpu_infos) {
         std::cout << theme_.ansi(barColor(theme_, gpu_info.utilization_percent));
         std::cout << getProgressBar(gpu_info.utilization_percent, 30) << " "
                   << std::fixed << std::setprecision(0) << gpu_info.utilization_percent << "%" << theme_.ansi(theme_.reset);
+        if (idx < gpu_history.size()) {
+            std::cout << " " << gpu_history[idx].getUtilSparkline(12);
+        }
         clearLine();
         std::cout << "\n";
 
@@ -358,7 +364,7 @@ void ConsoleUI::display(const DisplayInfo& info) {
 
     displaySystemStats(info.system_info);
 
-    displayGPUInfo(info.gpu_infos);
+    displayGPUInfo(info.gpu_infos, info.gpu_history);
 
     displayOllamaInfo(info.ollama_status);
 

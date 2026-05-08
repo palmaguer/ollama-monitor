@@ -10,6 +10,7 @@ struct AppConfig {
     bool logging_enabled = false;
     std::string log_format = "csv";
     std::string log_directory;
+    int sparkline_length = 20;
 
     static AppConfig defaults() { return AppConfig{}; }
 };
